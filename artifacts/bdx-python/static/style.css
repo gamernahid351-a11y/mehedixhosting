@@ -49,42 +49,50 @@ input, select, textarea { font-family: var(--font); }
 }
 .sidebar.collapsed { width: 52px; min-width: 52px; }
 
-/* ── Sidebar toggle button ─────────────────────────── */
-.sidebar-toggle {
-  margin-left: auto; flex-shrink: 0;
-  width: 26px; height: 26px;
+/* ── Floating sidebar toggle — always visible ──────────── */
+.sidebar-float-toggle {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  left: calc(220px - 14px);   /* sticks to right edge of expanded sidebar */
+  z-index: 200;
+  width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 5px; color: var(--text3);
-  border: 1px solid transparent;
-  transition: background .15s, color .15s, border-color .15s, box-shadow .15s;
-  position: relative;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 50%;
+  color: var(--text3);
+  cursor: pointer;
+  transition:
+    left .22s cubic-bezier(.4,0,.2,1),
+    background .15s,
+    color .15s,
+    border-color .15s,
+    box-shadow .15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.4);
 }
-.sidebar-toggle:hover {
-  background: rgba(124,58,237,.12);
-  color: var(--violet-l);
-  border-color: rgba(124,58,237,.35);
-  box-shadow: 0 0 8px rgba(124,58,237,.4), 0 0 20px rgba(124,58,237,.15), inset 0 0 6px rgba(124,58,237,.08);
+.sidebar-float-toggle:hover {
+  background: var(--violet);
+  color: #fff;
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.25), 0 2px 12px rgba(124,58,237,.4);
 }
-.sidebar-toggle:active {
-  box-shadow: 0 0 12px rgba(124,58,237,.6), 0 0 30px rgba(124,58,237,.25);
-  background: rgba(124,58,237,.18);
+.sidebar-float-toggle:active { transform: translateY(-50%) scale(.92); }
+
+/* When sidebar is collapsed, button slides left too */
+.sidebar-float-toggle.collapsed-pos {
+  left: calc(52px - 14px);
 }
-/* Neon pulse ring on hover */
-.sidebar-toggle::after {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 7px;
-  background: transparent;
-  border: 1px solid rgba(124,58,237,0);
-  transition: border-color .15s, box-shadow .15s;
-  pointer-events: none;
+
+/* Chevron flips when collapsed */
+.sidebar-float-toggle #float-toggle-icon {
+  transition: transform .22s cubic-bezier(.4,0,.2,1);
 }
-.sidebar-toggle:hover::after {
-  border-color: rgba(124,58,237,.2);
-  box-shadow: 0 0 8px rgba(124,58,237,.3);
-  animation: neon-pulse 1.8s ease-in-out infinite;
+.sidebar-float-toggle.collapsed-pos #float-toggle-icon {
+  transform: rotate(180deg);
 }
+
+/* Neon pulse on hover */
 @keyframes neon-pulse {
   0%, 100% { box-shadow: 0 0 6px rgba(124,58,237,.3); opacity: 1; }
   50%       { box-shadow: 0 0 14px rgba(124,58,237,.6), 0 0 28px rgba(124,58,237,.2); opacity: .8; }
@@ -117,8 +125,7 @@ input, select, textarea { font-family: var(--font); }
 
 /* ── Collapsed link centering ───────────────────────────── */
 .sidebar.collapsed .nav-link { justify-content: center; padding: 8px 0; }
-.sidebar.collapsed .logo { justify-content: center; padding: 0; gap: 0; }
-.sidebar.collapsed .sidebar-toggle { margin: 0; }
+.sidebar.collapsed .logo { justify-content: center; padding: 0 8px; gap: 0; }
 
 .logo {
   height: 56px; display: flex; align-items: center; gap: 10px;

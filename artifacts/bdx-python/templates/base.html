@@ -8,6 +8,13 @@
 </head>
 <body>
 <div class="shell" id="shell">
+  <!-- Floating sidebar toggle — always visible -->
+  <button class="sidebar-float-toggle" id="sidebar-float-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+    <svg id="float-toggle-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  </button>
+
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <!-- Logo row -->
@@ -16,13 +23,6 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
       </div>
       <span class="logo-text" id="logo-text">BDX Hosting</span>
-      <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar" onclick="toggleSidebar()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
     </div>
 
     <!-- Nav -->
@@ -122,35 +122,45 @@ const CURRENT_USER_ID = {{ current_user.id if current_user else 'null' }};
 let collapsed = localStorage.getItem('sidebar-collapsed') === '1';
 
 function applySidebar(animate) {
-  const sidebar = document.getElementById('sidebar');
-  const logoText = document.getElementById('logo-text');
-  const labels = document.querySelectorAll('.nav-label');
-  const sectionLabels = document.querySelectorAll('.nav-section-label');
-  const uw = document.getElementById('user-widget-wrap');
+  const sidebar   = document.getElementById('sidebar');
+  const floatBtn  = document.getElementById('sidebar-float-toggle');
+  const logoText  = document.getElementById('logo-text');
+  const labels    = document.querySelectorAll('.nav-label');
+  const secLabels = document.querySelectorAll('.nav-section-label');
+  const uw  = document.getElementById('user-widget-wrap');
   const tgw = document.getElementById('tg-buy-wrap');
-  const cb = document.getElementById('collapsed-bottom');
+  const cb  = document.getElementById('collapsed-bottom');
 
-  if (!animate) sidebar.style.transition = 'none';
+  if (!animate) {
+    sidebar.style.transition = 'none';
+    if (floatBtn) floatBtn.style.transition = 'none';
+  }
 
   if (collapsed) {
     sidebar.classList.add('collapsed');
+    if (floatBtn) floatBtn.classList.add('collapsed-pos');
     logoText.style.opacity = '0'; logoText.style.width = '0'; logoText.style.overflow = 'hidden';
-    labels.forEach(l => { l.style.opacity = '0'; l.style.width = '0'; l.style.overflow = 'hidden'; l.style.whiteSpace = 'nowrap'; });
-    sectionLabels.forEach(l => l.style.opacity = '0');
-    if (uw) uw.style.display = 'none';
+    labels.forEach(l => { l.style.opacity='0'; l.style.width='0'; l.style.overflow='hidden'; l.style.whiteSpace='nowrap'; });
+    secLabels.forEach(l => l.style.opacity = '0');
+    if (uw)  uw.style.display  = 'none';
     if (tgw) tgw.style.display = 'none';
-    if (cb) cb.style.display = 'flex';
+    if (cb)  cb.style.display  = 'flex';
   } else {
     sidebar.classList.remove('collapsed');
+    if (floatBtn) floatBtn.classList.remove('collapsed-pos');
     logoText.style.opacity = '1'; logoText.style.width = ''; logoText.style.overflow = '';
-    labels.forEach(l => { l.style.opacity = '1'; l.style.width = ''; l.style.overflow = ''; });
-    sectionLabels.forEach(l => l.style.opacity = '1');
-    if (uw) uw.style.display = '';
+    labels.forEach(l => { l.style.opacity='1'; l.style.width=''; l.style.overflow=''; });
+    secLabels.forEach(l => l.style.opacity = '1');
+    if (uw)  uw.style.display  = '';
     if (tgw) tgw.style.display = '';
-    if (cb) cb.style.display = 'none';
+    if (cb)  cb.style.display  = 'none';
   }
 
-  if (!animate) { sidebar.getBoundingClientRect(); sidebar.style.transition = ''; }
+  if (!animate) {
+    sidebar.getBoundingClientRect();
+    sidebar.style.transition = '';
+    if (floatBtn) floatBtn.style.transition = '';
+  }
 }
 
 function toggleSidebar() {
