@@ -2,82 +2,180 @@
 {% block title %}My Servers — BDX Hosting{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h1 class="page-title">My Servers</h1>
-  <p class="page-sub">Manage your deployed server slots.</p>
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">My Servers</h1>
+    <p class="page-sub">Manage, monitor and deploy your server slots.</p>
+  </div>
 </div>
 
 <div id="servers-grid" class="server-grid"></div>
 <div id="servers-empty" class="empty-state" style="display:none">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect></svg>
   <p>No servers deployed</p>
-  <span style="font-size:12px;color:var(--text3)">You don't have any server slots yet.</span>
+  <span>You don't have any server slots yet. Buy a plan to get started.</span>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="upload-modal">
+  <div class="modal upload-modal-inner">
+    <div class="upload-modal-header">
+      <div class="upload-modal-title-row">
+        <div class="upload-srv-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect></svg>
+        </div>
+        <div>
+          <div class="upload-modal-title">Upload File</div>
+          <div class="upload-srv-name" id="upload-srv-name">Server</div>
+        </div>
+      </div>
+      <button class="upload-close-btn" onclick="closeUploadModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="upload-dropzone" id="upload-dropzone"
+         ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+         onclick="document.getElementById('file-input').click()">
+      <input type="file" id="file-input" style="display:none" onchange="handleFileSelect(event)" accept=".zip,.js,.py,.json,.txt,.env,.sh,.html,.css">
+      <div class="upload-drop-icon" id="drop-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      </div>
+      <div class="upload-drop-text">Drop file here or <span class="upload-drop-link">click to browse</span></div>
+      <div class="upload-drop-sub">ZIP, JS, PY, JSON, SH — max 50 MB</div>
+      <div class="upload-drop-sub">ZIP files are automatically extracted</div>
+    </div>
+
+    <!-- Selected file info -->
+    <div class="upload-file-info" id="upload-file-info" style="display:none">
+      <div class="ufi-icon" id="ufi-icon">📄</div>
+      <div class="ufi-details">
+        <div class="ufi-name" id="ufi-name">file.zip</div>
+        <div class="ufi-size" id="ufi-size">0 KB</div>
+      </div>
+      <button class="ufi-remove" onclick="clearFile()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <!-- Progress -->
+    <div class="upload-progress-wrap" id="upload-progress-wrap" style="display:none">
+      <div class="upload-progress-bar-track">
+        <div class="upload-progress-bar-fill" id="upload-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="upload-progress-label" id="upload-progress-label">Uploading…</div>
+    </div>
+
+    <!-- Result -->
+    <div class="upload-result" id="upload-result" style="display:none"></div>
+
+    <!-- File list -->
+    <div id="upload-files-section" style="display:none">
+      <div class="upload-files-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        Uploaded Files
+      </div>
+      <div class="upload-files-list" id="upload-files-list"></div>
+    </div>
+
+    <div class="modal-actions" style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeUploadModal()">Close</button>
+      <button class="btn btn-upload-send" id="upload-send-btn" onclick="doUpload()" disabled>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        Upload
+      </button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+let uploadServerId = null;
+let selectedFile = null;
+
 function statusPill(s) {
-  return `<span class="status-pill ${s}">${s}</span>`;
+  const labels = { running:'Running', stopped:'Stopped', error:'Error', starting:'Starting' };
+  return `<span class="status-pill ${s}">${labels[s]||s}</span>`;
 }
 function pulseDot(s) {
   return `<div class="pulse-dot ${s}"></div>`;
 }
 function formatUptime(sec) {
   if (!sec) return '—';
-  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60);
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
-function miniBarColor(val, type) {
-  if (type === 'cpu') return val > 80 ? 'danger' : val > 50 ? 'warn' : '';
-  return '';
+function barColor(val) {
+  return val > 80 ? 'var(--neon-red)' : val > 55 ? 'var(--neon-amber)' : 'var(--neon-violet)';
+}
+function ramBarColor(pct) {
+  return pct > 80 ? 'var(--neon-red)' : pct > 55 ? 'var(--neon-amber)' : 'var(--neon-cyan)';
 }
 
 function serverCard(s) {
   const isRunning = s.status === 'running';
-  const ramPct = Math.min(100, (s.ram_used_mb / 512) * 100);
-  const cpuPct = Math.min(100, s.cpu_used);
-  return `
-  <div class="server-card" data-id="${s.id}">
-    <div class="server-card-top">
-      <div>
-        <div class="server-name-row">${pulseDot(s.status)}<span class="server-name">${s.name}</span></div>
+  const ramPct = s.ram_limit_mb > 0 ? Math.min(100,(s.ram_used_mb/s.ram_limit_mb)*100) : Math.min(100,(s.ram_used_mb/512)*100);
+  const cpuPct = Math.min(100, s.cpu_used||0);
+  const accentMap = { running:'cyan', stopped:'text3', error:'red', starting:'amber' };
+  const accent = accentMap[s.status]||'text3';
+
+  return `<div class="server-card neon-srv-card srv-${s.status}" data-id="${s.id}">
+    <div class="srv-top-row">
+      <div class="srv-name-block">
+        <div class="srv-name-row">
+          ${pulseDot(s.status)}
+          <span class="server-name">${s.name}</span>
+        </div>
         <div class="server-uptime">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           ${formatUptime(s.uptime)}
         </div>
       </div>
       ${statusPill(s.status)}
     </div>
-    <div class="server-resources">
-      <div class="resource-row">
-        <div class="resource-top">
-          <span class="resource-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="12" x2="2" y2="12"></line><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+
+    <div class="srv-resources">
+      <div class="srv-res-row">
+        <div class="srv-res-top">
+          <span class="srv-res-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="2"><line x1="22" y1="12" x2="2" y2="12"></line><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
             RAM
           </span>
-          <span class="resource-val">${s.ram_used_mb} MB</span>
+          <span class="srv-res-val neon-cyan">${s.ram_used_mb} MB</span>
         </div>
-        <div class="mini-bar"><div class="mini-bar-fill" style="width:${ramPct}%"></div></div>
+        <div class="neon-mini-bar"><div class="neon-mini-fill" style="width:${ramPct}%;background:${ramBarColor(ramPct)};box-shadow:0 0 6px ${ramBarColor(ramPct)}"></div></div>
       </div>
-      <div class="resource-row">
-        <div class="resource-top">
-          <span class="resource-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
+      <div class="srv-res-row">
+        <div class="srv-res-top">
+          <span class="srv-res-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--neon-violet)" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
             CPU
           </span>
-          <span class="resource-val">${s.cpu_used}%</span>
+          <span class="srv-res-val neon-violet">${s.cpu_used||0}%</span>
         </div>
-        <div class="mini-bar"><div class="mini-bar-fill ${miniBarColor(cpuPct,'cpu')}" style="width:${cpuPct}%"></div></div>
+        <div class="neon-mini-bar"><div class="neon-mini-fill" style="width:${cpuPct}%;background:${barColor(cpuPct)};box-shadow:0 0 6px ${barColor(cpuPct)}"></div></div>
       </div>
     </div>
-    <div class="server-actions">
+
+    <div class="srv-actions">
       ${isRunning
-        ? `<button class="btn btn-stop" onclick="changeStatus(${s.id},'stopped',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>Stop</button>`
-        : `<button class="btn btn-start" onclick="changeStatus(${s.id},'running',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>Start</button>`
+        ? `<button class="btn srv-btn-stop" onclick="changeStatus(${s.id},'stopped',this)">
+             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+             Stop
+           </button>`
+        : `<button class="btn srv-btn-start" onclick="changeStatus(${s.id},'running',this)">
+             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+             Start
+           </button>`
       }
-      <a href="${BASE}/console/${s.id}" class="btn btn-console">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+      <button class="btn srv-btn-upload" onclick="openUploadModal(${s.id},'${s.name.replace(/'/g,"\\'")}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        Upload
+      </button>
+      <a href="${BASE}/console/${s.id}" class="btn srv-btn-console">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
         Console
       </a>
     </div>
@@ -87,39 +185,197 @@ function serverCard(s) {
 async function loadServers() {
   const grid = document.getElementById('servers-grid');
   const empty = document.getElementById('servers-empty');
-  grid.innerHTML = `
-    ${[1,2,3].map(() => `
-      <div class="server-card">
-        <div class="skel" style="height:16px;width:60%"></div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
-          <div class="skel" style="height:3px;width:100%"></div>
-          <div class="skel" style="height:3px;width:100%"></div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <div class="skel" style="height:32px;flex:1"></div>
-          <div class="skel" style="height:32px;flex:1"></div>
-        </div>
-      </div>`).join('')}`;
+  grid.innerHTML = `${[1,2,3].map(()=>`
+    <div class="server-card neon-srv-card">
+      <div class="skel" style="height:14px;width:55%;border-radius:4px"></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+        <div class="skel" style="height:3px;width:100%;border-radius:2px"></div>
+        <div class="skel" style="height:3px;width:100%;border-radius:2px"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <div class="skel" style="height:32px;flex:1;border-radius:6px"></div>
+        <div class="skel" style="height:32px;flex:1;border-radius:6px"></div>
+        <div class="skel" style="height:32px;flex:1;border-radius:6px"></div>
+      </div>
+    </div>`).join('')}`;
   try {
-    const servers = await api(`/api/servers?userId=${CURRENT_USER_ID}`);
-    if (servers.length === 0) { grid.style.display = 'none'; empty.style.display = 'flex'; return; }
+    const servers = await api('/api/servers');
+    if (servers.length === 0) {
+      grid.style.display = 'none';
+      empty.style.display = 'flex';
+      return;
+    }
+    grid.style.display = '';
+    empty.style.display = 'none';
     grid.innerHTML = servers.map(serverCard).join('');
   } catch(e) { toast('Failed to load servers'); }
 }
 
 async function changeStatus(id, newStatus, btn) {
   btn.disabled = true;
-  btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> ...`;
+  const orig = btn.innerHTML;
+  btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
   try {
-    await api(`/api/servers/${id}/status`, { method: 'PUT', body: { status: newStatus } });
-    toast(newStatus === 'running' ? 'Server started' : 'Server stopped');
+    await api(`/api/servers/${id}/status`, { method:'PUT', body:{ status:newStatus } });
+    toast(newStatus==='running' ? '✅ Server started' : '⏹ Server stopped');
     loadServers();
-  } catch(e) { toast('Failed: ' + e.message); loadServers(); }
+  } catch(e) { toast('Error: ' + e.message); btn.disabled=false; btn.innerHTML=orig; }
+}
+
+/* ── Upload Modal ─────────────────────────────────────── */
+function openUploadModal(serverId, serverName) {
+  uploadServerId = serverId;
+  selectedFile = null;
+  document.getElementById('upload-srv-name').textContent = serverName;
+  document.getElementById('upload-file-info').style.display = 'none';
+  document.getElementById('upload-dropzone').style.display = '';
+  document.getElementById('upload-progress-wrap').style.display = 'none';
+  document.getElementById('upload-result').style.display = 'none';
+  document.getElementById('upload-send-btn').disabled = true;
+  document.getElementById('file-input').value = '';
+  loadFileList(serverId);
+  document.getElementById('upload-modal').classList.add('show');
+}
+
+function closeUploadModal() {
+  document.getElementById('upload-modal').classList.remove('show');
+  uploadServerId = null;
+  selectedFile = null;
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('upload-dropzone').classList.add('drag-over');
+}
+function handleDragLeave(e) {
+  document.getElementById('upload-dropzone').classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-dropzone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) setFile(file);
+}
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) setFile(file);
+}
+
+function setFile(file) {
+  selectedFile = file;
+  const isZip = file.name.toLowerCase().endsWith('.zip');
+  const sizeKb = (file.size/1024).toFixed(1);
+  document.getElementById('ufi-icon').textContent = isZip ? '📦' : '📄';
+  document.getElementById('ufi-name').textContent = file.name;
+  document.getElementById('ufi-size').textContent = sizeKb + ' KB' + (isZip ? ' · ZIP — will be extracted' : '');
+  document.getElementById('upload-file-info').style.display = 'flex';
+  document.getElementById('upload-dropzone').style.display = 'none';
+  document.getElementById('upload-send-btn').disabled = false;
+  document.getElementById('upload-result').style.display = 'none';
+}
+
+function clearFile() {
+  selectedFile = null;
+  document.getElementById('file-input').value = '';
+  document.getElementById('upload-file-info').style.display = 'none';
+  document.getElementById('upload-dropzone').style.display = '';
+  document.getElementById('upload-send-btn').disabled = true;
+}
+
+async function doUpload() {
+  if (!selectedFile || !uploadServerId) return;
+  const btn = document.getElementById('upload-send-btn');
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Uploading…`;
+
+  const pw = document.getElementById('upload-progress-wrap');
+  const pf = document.getElementById('upload-progress-fill');
+  const pl = document.getElementById('upload-progress-label');
+  pw.style.display = '';
+
+  // Fake progress animation while uploading
+  let prog = 0;
+  const ticker = setInterval(() => {
+    prog = Math.min(prog + Math.random()*12, 88);
+    pf.style.width = prog + '%';
+    pl.textContent = `Uploading… ${Math.round(prog)}%`;
+  }, 180);
+
+  const formData = new FormData();
+  formData.append('file', selectedFile);
+
+  try {
+    const resp = await fetch(`${BASE}/api/servers/${uploadServerId}/upload`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    clearInterval(ticker);
+    pf.style.width = '100%';
+    pl.textContent = 'Done!';
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${resp.status}`);
+    }
+    const result = await resp.json();
+    const res = document.getElementById('upload-result');
+    res.style.display = '';
+    res.innerHTML = `<div class="upload-success">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--neon-green)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      <div>
+        <div class="upload-success-title">${result.filename} uploaded (${result.size_kb} KB)</div>
+        ${result.is_zip && result.extracted.length ? `<div class="upload-success-sub">Extracted: ${result.extracted.slice(0,4).join(', ')}${result.extracted.length>4?' …':''}</div>` : ''}
+      </div>
+    </div>`;
+    toast('✅ File uploaded successfully');
+    clearFile();
+    loadFileList(uploadServerId);
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload`;
+    btn.disabled = true;
+  } catch(e) {
+    clearInterval(ticker);
+    pf.style.width = '0%';
+    pw.style.display = 'none';
+    const res = document.getElementById('upload-result');
+    res.style.display = '';
+    res.innerHTML = `<div class="upload-error"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--neon-red)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> ${e.message}</div>`;
+    btn.innerHTML = `Upload`;
+    btn.disabled = false;
+  }
+}
+
+async function loadFileList(serverId) {
+  const sec = document.getElementById('upload-files-section');
+  const list = document.getElementById('upload-files-list');
+  try {
+    const files = await api(`/api/servers/${serverId}/files`);
+    if (files.length === 0) { sec.style.display = 'none'; return; }
+    sec.style.display = '';
+    list.innerHTML = files.map(f => `
+      <div class="ufl-row">
+        <span class="ufl-icon">${f.name.endsWith('.zip')?'📦':'📄'}</span>
+        <div class="ufl-info">
+          <div class="ufl-name">${f.name}</div>
+          <div class="ufl-meta">${f.size_kb} KB</div>
+        </div>
+        <button class="ufl-del" onclick="deleteFile(${serverId},'${f.name}',this)" title="Delete">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
+        </button>
+      </div>`).join('');
+  } catch(e) { sec.style.display = 'none'; }
+}
+
+async function deleteFile(serverId, filename, btn) {
+  btn.disabled = true;
+  try {
+    await api(`/api/servers/${serverId}/files/${encodeURIComponent(filename)}`, { method:'DELETE' });
+    toast('🗑 File deleted');
+    loadFileList(serverId);
+  } catch(e) { toast('Error: ' + e.message); btn.disabled = false; }
 }
 
 loadServers();
-
-// Refresh every 30s
 setInterval(loadServers, 30000);
 </script>
 <style>

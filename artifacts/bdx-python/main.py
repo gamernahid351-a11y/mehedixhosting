@@ -1,8 +1,9 @@
-import os, asyncio, json, random
+import os, asyncio, json, random, shutil, zipfile, mimetypes
 from contextlib import asynccontextmanager
 from datetime import datetime
+from pathlib import Path
 
-from fastapi import FastAPI, Request, HTTPException, Form
+from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -285,6 +286,107 @@ async def api_delete_server(server_id: int):
     await db.execute("DELETE FROM console_logs WHERE server_id=$1", server_id)
     await db.execute("DELETE FROM servers WHERE id=$1", server_id)
     return {"message": "deleted"}
+
+# ── File Upload ───────────────────────────────────────────────────────────────
+UPLOADS_DIR = Path(__file__).parent / "uploads"
+UPLOADS_DIR.mkdir(exist_ok=True)
+MAX_UPLOAD_MB = 50
+
+@app.post(f"{BASE}/api/servers/{{server_id}}/upload")
+async def api_upload_file(request: Request, server_id: int, file: UploadFile = File(...)):
+    u = request.state.user
+    if not u:
+        raise HTTPException(401)
+    row = await db.fetchone("SELECT * FROM servers WHERE id=$1", server_id)
+    if not row:
+        raise HTTPException(404, "Server not found")
+    if u.get("role") != "admin" and row["user_id"] != u["id"]:
+        raise HTTPException(403, "Not your server")
+
+    # Size guard — read in chunks
+    server_dir = UPLOADS_DIR / str(server_id)
+    server_dir.mkdir(exist_ok=True)
+
+    filename = file.filename or "upload"
+    safe_name = "".join(c for c in filename if c.isalnum() or c in "._-").strip() or "upload"
+    dest = server_dir / safe_name
+
+    size = 0
+    chunks = []
+    while True:
+        chunk = await file.read(65536)
+        if not chunk:
+            break
+        size += len(chunk)
+        if size > MAX_UPLOAD_MB * 1024 * 1024:
+            raise HTTPException(413, f"File too large (max {MAX_UPLOAD_MB}MB)")
+        chunks.append(chunk)
+
+    with open(dest, "wb") as f:
+        for c in chunks:
+            f.write(c)
+
+    # If ZIP → extract
+    extracted = []
+    is_zip = safe_name.lower().endswith(".zip")
+    if is_zip:
+        try:
+            extract_dir = server_dir / safe_name.replace(".zip", "")
+            extract_dir.mkdir(exist_ok=True)
+            with zipfile.ZipFile(dest, "r") as zf:
+                zf.extractall(extract_dir)
+                extracted = zf.namelist()[:8]
+        except Exception as e:
+            pass
+
+    size_kb = round(size / 1024, 1)
+    msg_upload = f"📦 File uploaded: {safe_name} ({size_kb} KB)"
+    msg_extract = f"📂 Extracted {len(extracted)} files → /{safe_name.replace('.zip','')}" if is_zip and extracted else None
+
+    for msg, lvl in [(msg_upload, "info")] + ([(msg_extract, "info")] if msg_extract else []):
+        log_row = await db.fetchone(
+            "INSERT INTO console_logs(server_id,message,level) VALUES($1,$2,$3) RETURNING *",
+            server_id, msg, lvl
+        )
+        await broadcast_log(server_id, row_to_json(log_row))
+
+    return {
+        "filename": safe_name,
+        "size_kb": size_kb,
+        "is_zip": is_zip,
+        "extracted": extracted,
+        "path": f"/uploads/{server_id}/{safe_name}",
+    }
+
+@app.get(f"{BASE}/api/servers/{{server_id}}/files")
+async def api_list_files(request: Request, server_id: int):
+    u = request.state.user
+    if not u:
+        raise HTTPException(401)
+    server_dir = UPLOADS_DIR / str(server_id)
+    if not server_dir.exists():
+        return []
+    files = []
+    for f in sorted(server_dir.iterdir()):
+        if f.is_file():
+            stat = f.stat()
+            files.append({
+                "name": f.name,
+                "size_kb": round(stat.st_size / 1024, 1),
+                "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+            })
+    return files
+
+@app.delete(f"{BASE}/api/servers/{{server_id}}/files/{{filename}}")
+async def api_delete_file(request: Request, server_id: int, filename: str):
+    u = request.state.user
+    if not u:
+        raise HTTPException(401)
+    safe = "".join(c for c in filename if c.isalnum() or c in "._-")
+    target = UPLOADS_DIR / str(server_id) / safe
+    if target.exists():
+        target.unlink()
+    return {"deleted": safe}
 
 # ══════════════════════════════════════════════════════════════════════════════
 # API — LOGS + SSE

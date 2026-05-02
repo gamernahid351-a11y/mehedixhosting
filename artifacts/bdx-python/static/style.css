@@ -1273,3 +1273,222 @@ select option { background: #111; }
 .buy-btn-amber  { background: rgba(251,191,36,.12); color: var(--neon-amber); border: 1px solid rgba(251,191,36,.25); }
 .buy-btn-amber:hover  { background: rgba(251,191,36,.22); box-shadow: var(--glow-amber); }
 .buy-btn-renew  { background: rgba(167,139,250,.18) !important; }
+
+/* ══════════════════════════════════════════════════════════
+   NEON SERVER CARDS
+   ══════════════════════════════════════════════════════════ */
+.neon-srv-card {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 14px;
+  position: relative; overflow: hidden;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.neon-srv-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(167,139,250,.3) 50%, transparent 100%);
+}
+.neon-srv-card:hover { transform: translateY(-2px); }
+.neon-srv-card.srv-running { border-color: rgba(34,211,238,.2); }
+.neon-srv-card.srv-running:hover { border-color: rgba(34,211,238,.4); box-shadow: 0 0 20px rgba(34,211,238,.07); }
+.neon-srv-card.srv-stopped { border-color: rgba(255,255,255,.07); }
+.neon-srv-card.srv-stopped:hover { border-color: rgba(255,255,255,.13); }
+.neon-srv-card.srv-error { border-color: rgba(255,71,87,.2); }
+.neon-srv-card.srv-error:hover { border-color: rgba(255,71,87,.4); box-shadow: 0 0 20px rgba(255,71,87,.07); }
+
+.srv-top-row { display: flex; align-items: flex-start; justify-content: space-between; }
+.srv-name-block { display: flex; flex-direction: column; gap: 4px; }
+.srv-name-row { display: flex; align-items: center; gap: 8px; }
+
+.srv-resources { display: flex; flex-direction: column; gap: 10px; }
+.srv-res-row { display: flex; flex-direction: column; gap: 5px; }
+.srv-res-top { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+.srv-res-label { display: flex; align-items: center; gap: 5px; color: var(--text3); }
+.srv-res-val { font-family: var(--mono); font-size: 11px; font-weight: 600; }
+
+.neon-mini-bar { height: 3px; border-radius: 2px; background: rgba(255,255,255,.05); overflow: visible; }
+.neon-mini-fill { height: 100%; border-radius: 2px; transition: width .7s ease; }
+
+/* Server action buttons */
+.srv-actions { display: flex; gap: 7px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.04); }
+.srv-btn-start {
+  flex: 1; justify-content: center;
+  background: rgba(74,222,128,.08); color: var(--neon-green);
+  border: 1px solid rgba(74,222,128,.2); border-radius: 7px;
+  height: 32px; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 5px; cursor: pointer;
+  transition: all .12s;
+}
+.srv-btn-start:hover:not(:disabled) { background: rgba(74,222,128,.15); box-shadow: 0 0 10px rgba(74,222,128,.15); }
+.srv-btn-stop {
+  flex: 1; justify-content: center;
+  background: rgba(255,71,87,.08); color: var(--neon-red);
+  border: 1px solid rgba(255,71,87,.2); border-radius: 7px;
+  height: 32px; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 5px; cursor: pointer;
+  transition: all .12s;
+}
+.srv-btn-stop:hover:not(:disabled) { background: rgba(255,71,87,.15); box-shadow: 0 0 10px rgba(255,71,87,.15); }
+.srv-btn-upload {
+  flex: 1; justify-content: center;
+  background: rgba(251,191,36,.07); color: var(--neon-amber);
+  border: 1px solid rgba(251,191,36,.2); border-radius: 7px;
+  height: 32px; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 5px; cursor: pointer;
+  transition: all .12s; text-decoration: none;
+}
+.srv-btn-upload:hover { background: rgba(251,191,36,.14); box-shadow: 0 0 10px rgba(251,191,36,.15); }
+.srv-btn-console {
+  flex: 1; justify-content: center;
+  background: rgba(167,139,250,.07); color: var(--neon-violet);
+  border: 1px solid rgba(167,139,250,.2); border-radius: 7px;
+  height: 32px; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 5px; cursor: pointer;
+  transition: all .12s; text-decoration: none;
+}
+.srv-btn-console:hover { background: rgba(167,139,250,.14); box-shadow: 0 0 10px rgba(167,139,250,.15); }
+.srv-btn-start:disabled, .srv-btn-stop:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ══════════════════════════════════════════════════════════
+   UPLOAD MODAL
+   ══════════════════════════════════════════════════════════ */
+.upload-modal-inner {
+  width: 480px; max-width: 96vw;
+  background: #0d0d18;
+  border: 1px solid rgba(167,139,250,.2);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 0 40px rgba(124,58,237,.12), 0 24px 64px rgba(0,0,0,.5);
+}
+.upload-modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px;
+}
+.upload-modal-title-row { display: flex; align-items: center; gap: 12px; }
+.upload-srv-icon {
+  width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
+  background: rgba(167,139,250,.1); border: 1px solid rgba(167,139,250,.2);
+  display: flex; align-items: center; justify-content: center;
+}
+.upload-modal-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.upload-srv-name { font-size: 11px; color: var(--neon-violet); margin-top: 1px; }
+.upload-close-btn {
+  width: 28px; height: 28px; border-radius: 6px; display: flex;
+  align-items: center; justify-content: center;
+  background: rgba(255,255,255,.04); border: 1px solid var(--border);
+  color: var(--text3); cursor: pointer; transition: all .12s; flex-shrink: 0;
+}
+.upload-close-btn:hover { background: var(--red-bg); color: var(--neon-red); }
+
+/* Drop zone */
+.upload-dropzone {
+  border: 1.5px dashed rgba(167,139,250,.25);
+  border-radius: 10px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s;
+  background: rgba(167,139,250,.02);
+  margin-bottom: 14px;
+}
+.upload-dropzone:hover, .upload-dropzone.drag-over {
+  border-color: rgba(167,139,250,.5);
+  background: rgba(167,139,250,.05);
+  box-shadow: 0 0 20px rgba(167,139,250,.08);
+}
+.upload-drop-icon {
+  width: 52px; height: 52px; border-radius: 12px; margin: 0 auto 12px;
+  background: rgba(167,139,250,.08); border: 1px solid rgba(167,139,250,.15);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--neon-violet);
+}
+.upload-drop-text { font-size: 13px; font-weight: 500; color: var(--text2); }
+.upload-drop-link { color: var(--neon-violet); text-decoration: underline; }
+.upload-drop-sub { font-size: 11px; color: var(--text3); margin-top: 5px; }
+
+/* Selected file info */
+.upload-file-info {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 9px; margin-bottom: 14px;
+  background: rgba(251,191,36,.05); border: 1px solid rgba(251,191,36,.18);
+}
+.ufi-icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
+.ufi-details { flex: 1; min-width: 0; }
+.ufi-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ufi-size { font-size: 11px; color: var(--neon-amber); margin-top: 2px; font-family: var(--mono); }
+.ufi-remove {
+  width: 24px; height: 24px; border-radius: 5px; flex-shrink: 0;
+  background: rgba(255,255,255,.04); border: 1px solid var(--border);
+  color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .1s;
+}
+.ufi-remove:hover { background: var(--red-bg); color: var(--neon-red); }
+
+/* Progress */
+.upload-progress-wrap { margin-bottom: 14px; }
+.upload-progress-bar-track {
+  height: 5px; border-radius: 3px;
+  background: rgba(255,255,255,.06); overflow: hidden; margin-bottom: 6px;
+}
+.upload-progress-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--violet), var(--neon-violet));
+  box-shadow: 0 0 8px rgba(167,139,250,.5);
+  transition: width .2s ease;
+}
+.upload-progress-label { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+/* Result */
+.upload-success {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px; border-radius: 9px; margin-bottom: 14px;
+  background: rgba(74,222,128,.05); border: 1px solid rgba(74,222,128,.18);
+}
+.upload-success-title { font-size: 12px; font-weight: 600; color: var(--neon-green); }
+.upload-success-sub { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+.upload-error {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 9px; margin-bottom: 14px;
+  background: rgba(255,71,87,.05); border: 1px solid rgba(255,71,87,.18);
+  font-size: 12px; color: var(--neon-red);
+}
+
+/* Upload send button */
+.btn-upload-send {
+  background: linear-gradient(135deg, rgba(124,58,237,.8), rgba(167,139,250,.7));
+  color: #fff; border: 1px solid rgba(167,139,250,.4);
+  border-radius: 7px; height: 34px; padding: 0 16px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all .15s;
+}
+.btn-upload-send:hover:not(:disabled) { box-shadow: var(--glow-violet); }
+.btn-upload-send:disabled { opacity: .35; cursor: not-allowed; }
+
+/* File list */
+.upload-files-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text3);
+  margin-bottom: 8px; margin-top: 4px;
+}
+.upload-files-list { display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow-y: auto; }
+.ufl-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 7px;
+  background: rgba(255,255,255,.02); border: 1px solid var(--border);
+  transition: background .1s;
+}
+.ufl-row:hover { background: rgba(255,255,255,.04); }
+.ufl-icon { font-size: 16px; flex-shrink: 0; line-height: 1; }
+.ufl-info { flex: 1; min-width: 0; }
+.ufl-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ufl-meta { font-size: 10px; color: var(--text3); font-family: var(--mono); }
+.ufl-del {
+  width: 24px; height: 24px; border-radius: 5px; flex-shrink: 0;
+  background: none; border: 1px solid var(--border);
+  color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .1s;
+}
+.ufl-del:hover { background: var(--red-bg); border-color: rgba(255,71,87,.3); color: var(--neon-red); }
