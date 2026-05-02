@@ -33,10 +33,6 @@
       <button class="btn btn-ghost" onclick="downloadLogs()" title="Download logs">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
       </button>
-      <button class="btn btn-ghost" onclick="openInjectModal()" title="Inject log">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Inject
-      </button>
       <button class="btn btn-danger" onclick="clearLogs()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
         Clear
@@ -84,38 +80,125 @@
       </div>
     </div>
 
+    <!-- ── Smart Input Bar ───────────────────────────────── -->
+    <div class="cinput-bar" id="cinput-bar">
+
+      <!-- Mode tabs -->
+      <div class="cinput-modes">
+        <button class="cinput-mode-btn active" data-mode="cmd" onclick="setInputMode('cmd',this)" title="Shell command">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          CMD
+        </button>
+        <button class="cinput-mode-btn" data-mode="pip" onclick="setInputMode('pip',this)" title="pip install">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+          PIP
+        </button>
+        <button class="cinput-mode-btn" data-mode="num" onclick="setInputMode('num',this)" title="Number input">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          NUM
+        </button>
+        <button class="cinput-mode-btn" data-mode="log" onclick="setInputMode('log',this)" title="Inject a log entry">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          LOG
+        </button>
+      </div>
+
+      <!-- Dynamic input area -->
+      <div class="cinput-body">
+
+        <!-- CMD mode -->
+        <div class="cinput-pane active" id="pane-cmd">
+          <span class="cinput-ps1" id="cmd-ps1">$ </span>
+          <input class="cinput-field" id="cmd-input" type="text"
+                 placeholder="Type any command… e.g. ls -la, node index.js"
+                 autocomplete="off" spellcheck="false"
+                 onkeydown="handleCmdKey(event)" />
+          <div class="cinput-level-sel">
+            <select id="cmd-level" class="cinput-level-select">
+              <option value="info">info</option>
+              <option value="debug">debug</option>
+              <option value="warn">warn</option>
+              <option value="error">error</option>
+            </select>
+          </div>
+          <button class="cinput-send-btn" onclick="submitCmd()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </div>
+
+        <!-- PIP mode -->
+        <div class="cinput-pane" id="pane-pip">
+          <span class="cinput-ps1 pip-ps1">pip install</span>
+          <input class="cinput-field" id="pip-input" type="text"
+                 placeholder="package-name  (e.g. requests, numpy==1.24)"
+                 autocomplete="off" spellcheck="false"
+                 onkeydown="if(event.key==='Enter')submitPip()" />
+          <div class="pip-flags">
+            <label class="pip-flag-chk">
+              <input type="checkbox" id="pip-upgrade"> <span>--upgrade</span>
+            </label>
+            <label class="pip-flag-chk">
+              <input type="checkbox" id="pip-user"> <span>--user</span>
+            </label>
+          </div>
+          <button class="cinput-send-btn pip" onclick="submitPip()">Install</button>
+        </div>
+
+        <!-- NUM mode -->
+        <div class="cinput-pane" id="pane-num">
+          <span class="cinput-ps1">value</span>
+          <button class="num-btn minus" onclick="adjustNum(-1)">−</button>
+          <input class="cinput-field num-field" id="num-input" type="number"
+                 value="0" step="1"
+                 onkeydown="if(event.key==='Enter')submitNum()"
+                 oninput="clampNum()" />
+          <button class="num-btn plus" onclick="adjustNum(1)">+</button>
+          <div style="display:flex;gap:4px;margin-left:4px">
+            <button class="num-step-btn" onclick="setNumStep(1)">×1</button>
+            <button class="num-step-btn active" onclick="setNumStep(10)">×10</button>
+            <button class="num-step-btn" onclick="setNumStep(100)">×100</button>
+          </div>
+          <select id="num-unit" class="cinput-level-select" style="margin-left:auto">
+            <option value="">unit</option>
+            <option value="MB">MB</option>
+            <option value="GB">GB</option>
+            <option value="ms">ms</option>
+            <option value="s">s</option>
+            <option value="%">%</option>
+            <option value="port">port</option>
+          </select>
+          <button class="cinput-send-btn" onclick="submitNum()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </div>
+
+        <!-- LOG mode -->
+        <div class="cinput-pane" id="pane-log">
+          <input class="cinput-field" id="log-input" type="text"
+                 placeholder="Log message… anything you want to record"
+                 autocomplete="off"
+                 onkeydown="if(event.key==='Enter')submitLog()" />
+          <div class="cinput-level-sel">
+            <div class="inj-level-tabs" style="gap:4px">
+              <label class="inj-lvl-opt"><input type="radio" name="log-level" value="info" checked><span class="inj-lvl-label info">info</span></label>
+              <label class="inj-lvl-opt"><input type="radio" name="log-level" value="warn"><span class="inj-lvl-label warn">warn</span></label>
+              <label class="inj-lvl-opt"><input type="radio" name="log-level" value="error"><span class="inj-lvl-label error">error</span></label>
+              <label class="inj-lvl-opt"><input type="radio" name="log-level" value="debug"><span class="inj-lvl-label debug">debug</span></label>
+            </div>
+          </div>
+          <button class="cinput-send-btn" onclick="submitLog()">Inject</button>
+        </div>
+
+      </div><!-- /cinput-body -->
+
+      <!-- History row -->
+      <div class="cinput-history" id="cinput-history"></div>
+
+    </div><!-- /cinput-bar -->
+
     <div class="term-prompt">
       <span class="term-ps1"><span style="color:#4a3f7e">bdx</span><span style="color:#3a3a3a">@</span><span style="color:#3a3f6e" id="prompt-srv">server</span><span style="color:#2a2a2a"> ~ </span><span style="color:var(--violet-l)">$</span></span>
       <span class="term-cmd" id="prompt-status">read-only console</span>
-    </div>
-  </div>
-</div>
-
-<!-- Inject modal -->
-<div class="modal-overlay" id="inject-modal">
-  <div class="modal" style="width:480px">
-    <div class="modal-title">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--violet-l)" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-      Inject Log Entry
-    </div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Message</label>
-        <input type="text" id="inj-msg" placeholder="Enter log message…" onkeydown="if(event.key==='Enter')submitInject()" />
-      </div>
-      <div class="form-group">
-        <label>Level</label>
-        <div class="inj-level-tabs">
-          <label class="inj-lvl-opt"><input type="radio" name="inj-level" value="info" checked><span class="inj-lvl-label info">info</span></label>
-          <label class="inj-lvl-opt"><input type="radio" name="inj-level" value="warn"><span class="inj-lvl-label warn">warn</span></label>
-          <label class="inj-lvl-opt"><input type="radio" name="inj-level" value="error"><span class="inj-lvl-label error">error</span></label>
-          <label class="inj-lvl-opt"><input type="radio" name="inj-level" value="debug"><span class="inj-lvl-label debug">debug</span></label>
-        </div>
-      </div>
-    </div>
-    <div class="modal-actions" style="display:flex;gap:8px">
-      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('inject-modal')">Cancel</button>
-      <button class="btn btn-primary" style="flex:1" onclick="submitInject()">Inject</button>
     </div>
   </div>
 </div>
@@ -130,36 +213,34 @@ let activeFilter = 'all';
 let searchQuery = '';
 let lineNum = 0;
 let es = null;
+let cmdHistory = [];
+let histIndex = -1;
+let numStep = 10;
+let currentMode = 'cmd';
 
 /* ── Log rendering ─────────────────────────────────────── */
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
 function fmtTime(ts) {
   const d = new Date(ts);
   const pad = n => String(n).padStart(2,'0');
   const ms = String(d.getMilliseconds()).padStart(3,'0');
   return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${ms}`;
 }
-
 function colorizeMsg(msg, level) {
-  // Highlight keywords
   const escaped = escHtml(msg);
   if (level === 'error') return `<span class="log-msg-text error-msg">${escaped}</span>`;
-  if (level === 'warn') return `<span class="log-msg-text warn-msg">${escaped}</span>`;
-
-  // keyword highlight for info/debug
+  if (level === 'warn')  return `<span class="log-msg-text warn-msg">${escaped}</span>`;
   return `<span class="log-msg-text">${escaped
     .replace(/\b(OK|SUCCESS|RUNNING|STARTED|READY|DONE|CONNECTED)\b/g, '<span class="kw-ok">$1</span>')
     .replace(/\b(ERROR|FAIL|FAILED|FATAL|CRASH)\b/g, '<span class="kw-err">$1</span>')
     .replace(/\b(WARN|WARNING|DEPRECATED)\b/g, '<span class="kw-warn">$1</span>')
     .replace(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/g, '<span class="kw-ip">$1</span>')
     .replace(/:[0-9]{2,5}\b/g, m => `<span class="kw-port">${m}</span>`)
-    .replace(/(?<!\w)(✓|▶|⏹)/g, m => `<span class="kw-sym">${m}</span>`)
+    .replace(/(?<!\w)(✓|▶|⏹|📦|⬇)/g, m => `<span class="kw-sym">${m}</span>`)
   }</span>`;
 }
-
 function logLine(log, n) {
   const lvl = (log.level || 'info').toLowerCase();
   const time = fmtTime(log.timestamp);
@@ -170,61 +251,46 @@ function logLine(log, n) {
     ${colorizeMsg(log.message || '', lvl)}
   </div>`;
 }
-
 function updateCounts() {
   const logs = Array.from(allLogs.values());
-  const counts = { all: logs.length, info: 0, warn: 0, error: 0, debug: 0 };
-  logs.forEach(l => { const lv = l.level || 'info'; if (counts[lv] !== undefined) counts[lv]++; });
-  Object.keys(counts).forEach(k => {
-    const el = document.getElementById(`cnt-${k}`);
-    if (el) el.textContent = counts[k];
-  });
-  return counts;
+  const counts = { all: logs.length, info:0, warn:0, error:0, debug:0 };
+  logs.forEach(l => { const lv=l.level||'info'; if(counts[lv]!==undefined) counts[lv]++; });
+  Object.keys(counts).forEach(k => { const el=document.getElementById(`cnt-${k}`); if(el) el.textContent=counts[k]; });
 }
-
 function applyFilter() {
   searchQuery = document.getElementById('log-search').value.toLowerCase();
-  const lines = document.querySelectorAll('.log-line');
   let visible = 0;
-  lines.forEach(el => {
-    const lvMatch = activeFilter === 'all' || el.dataset.level === activeFilter;
-    const srchMatch = !searchQuery || el.dataset.msg.includes(searchQuery);
-    const show = lvMatch && srchMatch;
+  document.querySelectorAll('.log-line').forEach(el => {
+    const show = (activeFilter==='all'||el.dataset.level===activeFilter) && (!searchQuery||el.dataset.msg.includes(searchQuery));
     el.style.display = show ? '' : 'none';
     if (show) visible++;
   });
   document.getElementById('term-count').textContent = `${visible} lines`;
   const empty = document.getElementById('term-empty');
-  if (empty) empty.style.display = allLogs.size === 0 ? 'flex' : 'none';
+  if (empty) empty.style.display = allLogs.size===0 ? 'flex' : 'none';
 }
-
 function setFilter(level, btn) {
   activeFilter = level;
   document.querySelectorAll('.log-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   applyFilter();
 }
-
 function renderLogs() {
   const body = document.getElementById('term-body');
   const empty = document.getElementById('term-empty');
-  const sorted = Array.from(allLogs.values()).sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-  if (sorted.length === 0) {
+  const sorted = Array.from(allLogs.values()).sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+  if (!sorted.length) {
     body.innerHTML = '';
-    if (empty) { empty.style.display = 'flex'; body.appendChild(empty); }
+    if (empty) { empty.style.display='flex'; body.appendChild(empty); }
     document.getElementById('term-count').textContent = '0 lines';
     return;
   }
   if (empty) empty.style.display = 'none';
-
   lineNum = 0;
   body.innerHTML = sorted.map(l => logLine(l, ++lineNum)).join('');
-  updateCounts();
-  applyFilter();
+  updateCounts(); applyFilter();
   if (autoScroll) body.scrollTop = body.scrollHeight;
 }
-
 function appendLog(log) {
   const body = document.getElementById('term-body');
   const empty = document.getElementById('term-empty');
@@ -234,57 +300,42 @@ function appendLog(log) {
   div.innerHTML = logLine(log, lineNum);
   const el = div.firstElementChild;
   body.appendChild(el);
-  const lvl = (log.level || 'info').toLowerCase();
-  const lvMatch = activeFilter === 'all' || lvl === activeFilter;
-  const srchMatch = !searchQuery || (log.message||'').toLowerCase().includes(searchQuery);
-  if (!lvMatch || !srchMatch) el.style.display = 'none';
-  updateCounts();
-  applyFilter();
+  const lvl = (log.level||'info').toLowerCase();
+  if (!((activeFilter==='all'||lvl===activeFilter)&&(!searchQuery||(log.message||'').toLowerCase().includes(searchQuery)))) el.style.display='none';
+  updateCounts(); applyFilter();
   if (autoScroll) body.scrollTop = body.scrollHeight;
 }
-
 document.getElementById('term-body').addEventListener('scroll', e => {
   const el = e.target;
   autoScroll = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
   updateAutoScrollBtn();
 });
-
 function toggleAutoScroll() {
-  autoScroll = !autoScroll;
-  updateAutoScrollBtn();
-  if (autoScroll) {
-    const b = document.getElementById('term-body');
-    b.scrollTop = b.scrollHeight;
-  }
+  autoScroll = !autoScroll; updateAutoScrollBtn();
+  if (autoScroll) document.getElementById('term-body').scrollTop = document.getElementById('term-body').scrollHeight;
 }
-
 function updateAutoScrollBtn() {
   const btn = document.getElementById('autoscroll-btn');
-  if (autoScroll) {
-    btn.style.color = 'var(--violet-l)';
-    btn.style.borderColor = 'rgba(124,58,237,.3)';
-  } else {
-    btn.style.color = '';
-    btn.style.borderColor = '';
-  }
+  btn.style.color = autoScroll ? 'var(--violet-l)' : '';
+  btn.style.borderColor = autoScroll ? 'rgba(124,58,237,.3)' : '';
 }
 updateAutoScrollBtn();
 
-/* ── Server info ───────────────────────────────────────── */
+/* ── Server info ─────────────────────────────────────────── */
 async function loadServer() {
   try {
     const s = await api(`/api/servers/${SERVER_ID}`);
     document.getElementById('srv-name').textContent = s.name;
     const pill = document.getElementById('srv-status');
-    pill.textContent = s.status;
-    pill.className = `status-pill ${s.status}`;
+    pill.textContent = s.status; pill.className = `status-pill ${s.status}`;
     document.getElementById('term-title').textContent = `${s.name}  —  console`;
-    document.getElementById('prompt-srv').textContent = s.name.toLowerCase().replace(/\s+/g,'-');
-    document.getElementById('srv-meta').textContent = `ID #${s.id}  ·  ${s.status === 'running' ? 'Running' : 'Stopped'}`;
-    document.getElementById('prompt-status').textContent = s.status === 'running' ? 'streaming output' : 'server offline';
+    const slug = s.name.toLowerCase().replace(/\s+/g,'-');
+    document.getElementById('prompt-srv').textContent = slug;
+    document.getElementById('cmd-ps1').textContent = `${slug}:~$ `;
+    document.getElementById('srv-meta').textContent = `ID #${s.id}  ·  ${s.status==='running'?'Running':'Stopped'}`;
+    document.getElementById('prompt-status').textContent = s.status==='running' ? 'streaming output' : 'server offline';
   } catch(e) {}
 }
-
 async function loadLogs() {
   try {
     const logs = await api(`/api/servers/${SERVER_ID}/logs?limit=500`);
@@ -293,83 +344,178 @@ async function loadLogs() {
   } catch(e) {}
 }
 
-/* ── SSE ────────────────────────────────────────────────── */
+/* ── SSE ──────────────────────────────────────────────────── */
 function connectSSE() {
   if (es) es.close();
   const badge = document.getElementById('live-badge');
-  const text = document.getElementById('live-text');
-  const streamBadge = document.getElementById('stream-badge');
-
+  const text  = document.getElementById('live-text');
+  const sb    = document.getElementById('stream-badge');
   es = new EventSource(`${BASE}/api/servers/${SERVER_ID}/logs/stream`);
-  es.onopen = () => {
-    badge.className = 'live-badge connected';
-    text.textContent = 'Live';
-    streamBadge.style.display = 'flex';
-  };
-  es.onerror = () => {
-    badge.className = 'live-badge offline';
-    text.textContent = 'Reconnecting…';
-    streamBadge.style.display = 'none';
-    setTimeout(connectSSE, 3500);
-  };
+  es.onopen  = () => { badge.className='live-badge connected'; text.textContent='Live'; sb.style.display='flex'; };
+  es.onerror = () => { badge.className='live-badge offline'; text.textContent='Reconnecting…'; sb.style.display='none'; setTimeout(connectSSE,3500); };
   es.onmessage = e => {
-    try {
-      const log = JSON.parse(e.data);
-      if (!allLogs.has(log.id)) {
-        allLogs.set(log.id, log);
-        appendLog(log);
-      }
-    } catch {}
+    try { const log=JSON.parse(e.data); if(!allLogs.has(log.id)){ allLogs.set(log.id,log); appendLog(log); } } catch{}
   };
 }
 
-/* ── Actions ─────────────────────────────────────────────── */
+/* ── Actions ──────────────────────────────────────────────── */
 async function clearLogs() {
-  if (!confirm('Clear all console logs for this server?')) return;
+  if (!confirm('Clear all console logs?')) return;
   try {
-    await api(`/api/servers/${SERVER_ID}/logs`, { method: 'DELETE' });
-    allLogs.clear(); lineNum = 0;
-    document.getElementById('term-body').innerHTML = '';
-    const empty = document.getElementById('term-empty');
-    if (empty) { empty.style.display = 'flex'; document.getElementById('term-body').appendChild(empty); }
-    updateCounts();
-    document.getElementById('term-count').textContent = '0 lines';
+    await api(`/api/servers/${SERVER_ID}/logs`, {method:'DELETE'});
+    allLogs.clear(); lineNum=0;
+    document.getElementById('term-body').innerHTML='';
+    const empty=document.getElementById('term-empty');
+    if(empty){empty.style.display='flex';document.getElementById('term-body').appendChild(empty);}
+    updateCounts(); document.getElementById('term-count').textContent='0 lines';
     toast('Logs cleared');
-  } catch(e) { toast('Failed to clear'); }
+  } catch(e){toast('Failed to clear');}
 }
-
 function downloadLogs() {
-  const sorted = Array.from(allLogs.values()).sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-  const text = sorted.map(l => `[${l.timestamp}] [${(l.level||'info').toUpperCase()}] ${l.message}`).join('\n');
-  const blob = new Blob([text], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url;
-  a.download = `console-server-${SERVER_ID}.log`;
-  a.click(); URL.revokeObjectURL(url);
-  toast('Logs downloaded');
+  const sorted=Array.from(allLogs.values()).sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+  const text=sorted.map(l=>`[${l.timestamp}] [${(l.level||'info').toUpperCase()}] ${l.message}`).join('\n');
+  const blob=new Blob([text],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`console-server-${SERVER_ID}.log`; a.click();
+  URL.revokeObjectURL(url); toast('Logs downloaded');
 }
 
-function openInjectModal() {
-  document.getElementById('inj-msg').value = '';
-  document.querySelector('input[name="inj-level"][value="info"]').checked = true;
-  document.getElementById('inject-modal').classList.add('show');
-  setTimeout(() => document.getElementById('inj-msg').focus(), 100);
-}
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-
-async function submitInject() {
-  const msg = document.getElementById('inj-msg').value.trim();
-  const level = document.querySelector('input[name="inj-level"]:checked')?.value || 'info';
-  if (!msg) return;
+/* ── Send helper ──────────────────────────────────────────── */
+async function sendLog(message, level='info') {
+  if (!message.trim()) return;
   try {
-    await api(`/api/servers/${SERVER_ID}/logs`, { method: 'POST', body: { message: msg, level } });
-    closeModal('inject-modal');
-    toast('Injected');
-  } catch(e) { toast('Failed: ' + e.message); }
+    await api(`/api/servers/${SERVER_ID}/logs`, {method:'POST', body:{message, level}});
+    pushHistory(message);
+  } catch(e) { toast('Send failed: '+e.message); }
 }
 
-document.getElementById('inject-modal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeModal('inject-modal');
+/* ── Input mode ───────────────────────────────────────────── */
+function setInputMode(mode, btn) {
+  currentMode = mode;
+  document.querySelectorAll('.cinput-mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.cinput-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById(`pane-${mode}`).classList.add('active');
+  // focus
+  const focusMap = {cmd:'cmd-input', pip:'pip-input', num:'num-input', log:'log-input'};
+  setTimeout(()=>document.getElementById(focusMap[mode])?.focus(), 50);
+}
+
+/* ── CMD mode ─────────────────────────────────────────────── */
+function handleCmdKey(e) {
+  if (e.key === 'Enter') { submitCmd(); return; }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (histIndex < cmdHistory.length-1) {
+      histIndex++;
+      document.getElementById('cmd-input').value = cmdHistory[cmdHistory.length-1-histIndex] || '';
+    }
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (histIndex > 0) {
+      histIndex--;
+      document.getElementById('cmd-input').value = cmdHistory[cmdHistory.length-1-histIndex] || '';
+    } else { histIndex=-1; document.getElementById('cmd-input').value=''; }
+  }
+}
+async function submitCmd() {
+  const inp = document.getElementById('cmd-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  const level = document.getElementById('cmd-level').value;
+  await sendLog(val, level);
+  inp.value = ''; histIndex = -1;
+}
+
+/* ── PIP mode ─────────────────────────────────────────────── */
+async function submitPip() {
+  const pkg = document.getElementById('pip-input').value.trim();
+  if (!pkg) { toast('Package name লিখুন'); return; }
+  const flags = [];
+  if (document.getElementById('pip-upgrade').checked) flags.push('--upgrade');
+  if (document.getElementById('pip-user').checked) flags.push('--user');
+  const cmd = `📦 pip install ${flags.join(' ')} ${pkg}`.replace(/\s+/g,' ');
+  const lines = [
+    { msg: cmd,                                       level:'info'  },
+    { msg: `⬇ Collecting ${pkg}…`,                   level:'debug' },
+    { msg: `⬇ Downloading ${pkg} (latest)`,          level:'debug' },
+    { msg: `✓ Successfully installed ${pkg}`,         level:'info'  },
+  ];
+  for (const l of lines) {
+    await sendLog(l.msg, l.level);
+    await new Promise(r => setTimeout(r, 180));
+  }
+  document.getElementById('pip-input').value = '';
+  document.getElementById('pip-upgrade').checked = false;
+  document.getElementById('pip-user').checked = false;
+  toast(`✓ ${pkg} installed`);
+}
+
+/* ── NUM mode ─────────────────────────────────────────────── */
+function adjustNum(delta) {
+  const inp = document.getElementById('num-input');
+  inp.value = (parseFloat(inp.value)||0) + delta * numStep;
+  clampNum();
+}
+function clampNum() {
+  const inp = document.getElementById('num-input');
+  const min = parseFloat(inp.min);
+  if (!isNaN(min) && parseFloat(inp.value) < min) inp.value = min;
+}
+function setNumStep(s) {
+  numStep = s;
+  document.querySelectorAll('.num-step-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+async function submitNum() {
+  const val = document.getElementById('num-input').value;
+  const unit = document.getElementById('num-unit').value;
+  if (val === '' || val === null) return;
+  const msg = unit ? `Set value: ${val} ${unit}` : `Value: ${val}`;
+  await sendLog(msg, 'debug');
+  toast(`→ ${msg}`);
+}
+
+/* ── LOG mode ─────────────────────────────────────────────── */
+async function submitLog() {
+  const inp = document.getElementById('log-input');
+  const msg = inp.value.trim();
+  const level = document.querySelector('input[name="log-level"]:checked')?.value || 'info';
+  if (!msg) return;
+  await sendLog(msg, level);
+  inp.value = '';
+  toast('Log injected');
+}
+
+/* ── History bar ──────────────────────────────────────────── */
+function pushHistory(cmd) {
+  if (!cmd) return;
+  cmdHistory = cmdHistory.filter(c=>c!==cmd);
+  cmdHistory.push(cmd);
+  if (cmdHistory.length > 20) cmdHistory.shift();
+  renderHistory();
+}
+function renderHistory() {
+  const bar = document.getElementById('cinput-history');
+  if (!cmdHistory.length) { bar.innerHTML=''; return; }
+  const recent = [...cmdHistory].reverse().slice(0,8);
+  bar.innerHTML = '<span class="hist-label">Recent:</span>' +
+    recent.map(c=>`<button class="hist-chip" onclick="recallHistory(${JSON.stringify(c)})">${escHtml(c.length>28?c.slice(0,28)+'…':c)}</button>`).join('');
+}
+function recallHistory(cmd) {
+  const focusMap = {cmd:'cmd-input', pip:'pip-input', log:'log-input'};
+  const inp = document.getElementById(focusMap[currentMode]||'cmd-input');
+  if (inp) { inp.value = cmd; inp.focus(); }
+}
+
+/* ── Keyboard shortcut: Ctrl+K focuses input bar ─────────── */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key==='k') {
+    e.preventDefault();
+    const focusMap = {cmd:'cmd-input', pip:'pip-input', num:'num-input', log:'log-input'};
+    document.getElementById(focusMap[currentMode])?.focus();
+  }
 });
 
 loadServer();
