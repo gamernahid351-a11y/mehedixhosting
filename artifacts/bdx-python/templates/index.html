@@ -2,58 +2,237 @@
 {% block title %}Dashboard — BDX Hosting{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h1 class="page-title">Overview</h1>
-  <p class="page-sub">Platform status and resource usage at a glance.</p>
-</div>
-
-<div class="section-label">Infrastructure</div>
-<div class="stat-grid" id="infra-grid">
-  <div class="stat-card"><div class="stat-card-top"><span class="stat-card-label">Total Users</span><div class="stat-icon" style="background:rgba(124,58,237,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div></div><div class="stat-value skel" style="width:40px;height:28px" id="s-users">—</div></div>
-  <div class="stat-card"><div class="stat-card-top"><span class="stat-card-label">Total Servers</span><div class="stat-icon" style="background:rgba(59,130,246,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg></div></div><div class="stat-value" id="s-servers">—</div></div>
-  <div class="stat-card"><div class="stat-card-top"><span class="stat-card-label">Active Plans</span><div class="stat-icon" style="background:rgba(255,255,255,.04)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg></div></div><div class="stat-value" id="s-plans">—</div></div>
-  <div class="stat-card"><div class="stat-card-top"><span class="stat-card-label">Error State</span><div class="stat-icon" style="background:rgba(239,68,68,.08)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div></div><div class="stat-value" id="s-errors">—</div></div>
-</div>
-
-<div class="section-label" style="margin-top:24px">Server Health</div>
-<div class="stat-grid">
-  <div class="stat-card"><div class="stat-card-top"><span class="stat-card-label">Running</span><div class="stat-icon" style="background:rgba(16,185,129,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div></div><div class="stat-value" id="s-running">—</div></div>
-  <div class="stat-card"><div class="stat-card-top"><span class="stat-card-label">Stopped</span><div class="stat-icon" style="background:rgba(255,255,255,.04)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><rect x="9" y="9" width="6" height="6"></rect></svg></div></div><div class="stat-value" id="s-stopped">—</div></div>
-  <div class="stat-card"><div class="stat-card-top"><span class="stat-card-label">RAM Used</span><div class="stat-icon" style="background:rgba(245,158,11,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div></div><div class="stat-value" id="s-ram">—</div></div>
-  <div class="stat-card"><div class="stat-card-top"><span class="stat-card-label">Avg CPU</span><div class="stat-icon" style="background:rgba(6,182,212,.1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg></div></div><div class="stat-value" id="s-cpu">—</div></div>
-</div>
-
-<div class="health-card" style="margin-top:10px">
-  <div class="health-top">
-    <span class="health-label">Platform Health</span>
-    <span class="health-sub" id="h-label">— / — running</span>
+<!-- Welcome banner -->
+<div class="dash-welcome" id="dash-welcome">
+  <div class="dash-welcome-left">
+    <div class="dash-avatar" id="dw-avatar">?</div>
+    <div>
+      <div class="dash-welcome-name" id="dw-name">Loading…</div>
+      <div class="dash-welcome-sub" id="dw-sub">Checking your plan…</div>
+    </div>
   </div>
-  <div class="health-bar-track"><div class="health-bar-fill" id="h-bar" style="width:0%"></div></div>
-  <div class="health-foot"><span>0%</span><span>100%</span></div>
+  <div class="dash-plan-pill" id="dw-plan-pill" style="display:none"></div>
+</div>
+
+<!-- My Plan status card -->
+<div id="plan-status-wrap"></div>
+
+<!-- Stats row -->
+<div class="section-label neon-label" style="margin-top:24px">
+  <span class="neon-dot cyan"></span> My Servers
+</div>
+<div class="stat-grid" id="my-stat-grid">
+  <div class="stat-card neon-card cyan-card">
+    <div class="stat-card-top">
+      <span class="stat-card-label">My Servers</span>
+      <div class="stat-icon" style="background:rgba(34,211,238,.08)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+      </div>
+    </div>
+    <div class="stat-value neon-cyan" id="ms-total">—</div>
+  </div>
+  <div class="stat-card neon-card green-card">
+    <div class="stat-card-top">
+      <span class="stat-card-label">Running</span>
+      <div class="stat-icon" style="background:rgba(74,222,128,.08)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      </div>
+    </div>
+    <div class="stat-value neon-green" id="ms-running">—</div>
+  </div>
+  <div class="stat-card neon-card violet-card">
+    <div class="stat-card-top">
+      <span class="stat-card-label">Slots Used</span>
+      <div class="stat-icon" style="background:rgba(167,139,250,.08)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+      </div>
+    </div>
+    <div class="stat-value neon-violet" id="ms-slots">—</div>
+  </div>
+  <div class="stat-card neon-card amber-card">
+    <div class="stat-card-top">
+      <span class="stat-card-label">RAM Used</span>
+      <div class="stat-icon" style="background:rgba(251,191,36,.08)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      </div>
+    </div>
+    <div class="stat-value neon-amber" id="ms-ram">—</div>
+  </div>
+</div>
+
+<!-- Available Plans -->
+<div class="section-label neon-label" style="margin-top:28px">
+  <span class="neon-dot violet"></span> Available Packages — Buy করুন
+</div>
+<div class="buy-plans-grid" id="buy-plans-grid">
+  <div class="plan-card-big" style="opacity:.4">
+    <div class="stat-value" style="font-size:13px">Loading plans…</div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-(async function() {
-  try {
-    const s = await api('/api/stats');
-    document.getElementById('s-users').textContent = s.totalUsers;
-    document.getElementById('s-servers').textContent = s.totalServers;
-    document.getElementById('s-plans').textContent = s.totalPlans;
-    document.getElementById('s-errors').textContent = s.errorServers;
-    document.getElementById('s-running').textContent = s.runningServers;
-    document.getElementById('s-stopped').textContent = s.stoppedServers;
-    document.getElementById('s-ram').textContent = (s.totalRamUsedMB / 1024).toFixed(1) + ' GB';
-    document.getElementById('s-cpu').textContent = s.avgCpuUsed.toFixed(1) + '%';
-    document.getElementById('h-label').textContent = `${s.runningServers} / ${s.totalServers} running`;
-    const pct = s.totalServers > 0 ? (s.runningServers / s.totalServers * 100) : 0;
-    setTimeout(() => { document.getElementById('h-bar').style.width = pct + '%'; }, 100);
-    // Remove skeleton
-    document.getElementById('s-users').classList.remove('skel');
-    document.getElementById('s-users').style.width = '';
-    document.getElementById('s-users').style.height = '';
-  } catch(e) { console.error(e); }
-})();
+let meData = null;
+
+async function loadDashboard() {
+  const [me, plans, servers] = await Promise.all([
+    api('/api/me'),
+    api('/api/plans'),
+    api('/api/servers'),
+  ]);
+  meData = me;
+
+  // Welcome banner
+  const av = document.getElementById('dw-avatar');
+  const nm = document.getElementById('dw-name');
+  const sb = document.getElementById('dw-sub');
+  const pp = document.getElementById('dw-plan-pill');
+  av.textContent = (me.username||'?')[0].toUpperCase();
+  nm.textContent = `Welcome back, ${me.username}!`;
+
+  if (me.plan_name) {
+    const exp = me.plan_expires_at ? new Date(me.plan_expires_at) : null;
+    const diff = exp ? Math.ceil((exp - Date.now())/86400000) : null;
+    sb.textContent = `You are on the ${me.plan_name} plan`;
+    if (diff !== null) sb.textContent += ` · ${diff > 0 ? diff+'d remaining' : 'Expired'}`;
+    pp.style.display = 'flex';
+    pp.innerHTML = `<span class="neon-plan-pill">${me.plan_name}</span>`;
+  } else {
+    sb.textContent = 'No active plan — choose one below to get started';
+  }
+
+  // Plan status card
+  renderPlanStatus(me);
+
+  // Server stats
+  const running = servers.filter(s => s.status === 'running').length;
+  const ramUsed = servers.reduce((sum, s) => sum + (s.ram_used_mb||0), 0);
+  document.getElementById('ms-total').textContent = servers.length;
+  document.getElementById('ms-running').textContent = running;
+  document.getElementById('ms-slots').textContent = `${me.slots_used||0} / ${me.max_slots||0}`;
+  document.getElementById('ms-ram').textContent = ramUsed >= 1024 ? (ramUsed/1024).toFixed(1)+'GB' : ramUsed+'MB';
+
+  // Plans grid
+  renderBuyPlans(plans, me);
+}
+
+function renderPlanStatus(me) {
+  const wrap = document.getElementById('plan-status-wrap');
+  if (!me.plan_name) {
+    wrap.innerHTML = `<div class="no-plan-banner">
+      <div class="no-plan-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      </div>
+      <div class="no-plan-text">
+        <div class="no-plan-title">কোনো plan নেই</div>
+        <div class="no-plan-desc">নিচে থেকে একটা package কিনুন অথবা Telegram-এ যোগাযোগ করুন</div>
+      </div>
+      <a href="https://t.me/proxaura" target="_blank" class="btn btn-tg-buy">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z"/></svg>
+        Buy via Telegram
+      </a>
+    </div>`;
+    return;
+  }
+
+  const exp = me.plan_expires_at ? new Date(me.plan_expires_at) : null;
+  const diff = exp ? Math.ceil((exp - Date.now()) / 86400000) : null;
+  const pct = me.max_slots > 0 ? Math.min(((me.slots_used||0)/me.max_slots)*100, 100) : 0;
+  const ramMB = me.ram_mb || 512;
+  const ramStr = ramMB >= 1024 ? (ramMB/1024).toFixed(1)+'GB' : ramMB+'MB';
+
+  let expiryHtml = '';
+  if (diff !== null) {
+    const cls = diff < 0 ? 'expiry-expired' : diff <= 3 ? 'expiry-soon' : diff <= 7 ? 'expiry-warn' : 'expiry-ok';
+    const txt = diff < 0 ? `Expired ${Math.abs(diff)}d ago` : diff === 0 ? 'Expires today!' : `${diff} days left`;
+    expiryHtml = `<span class="expiry-pill ${cls}">${txt}</span>`;
+  } else {
+    expiryHtml = `<span class="expiry-pill expiry-ok">∞ Unlimited</span>`;
+  }
+
+  wrap.innerHTML = `<div class="active-plan-card">
+    <div class="apc-glow"></div>
+    <div class="apc-header">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="apc-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+        </div>
+        <div>
+          <div class="apc-plan-name">${me.plan_name}</div>
+          <div class="apc-plan-label">Active Plan</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        ${expiryHtml}
+        <a href="https://t.me/proxaura" target="_blank" class="btn btn-tg-renew">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z"/></svg>
+          Renew
+        </a>
+      </div>
+    </div>
+    <div class="apc-specs">
+      <div class="apc-spec">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"></rect><rect x="2" y="14" width="20" height="8" rx="2"></rect></svg>
+        <span>${me.max_slots||0} Slots</span>
+      </div>
+      <div class="apc-spec">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        <span>${ramStr} RAM</span>
+      </div>
+      <div class="apc-spec">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
+        <span>${me.cpu_percent||0}% CPU</span>
+      </div>
+    </div>
+    <div class="apc-bar-row">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px">
+        <span style="color:var(--text3)">Slots used</span>
+        <span style="color:var(--text2);font-family:var(--mono)">${me.slots_used||0} / ${me.max_slots||0}</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${pct>80?'var(--neon-red)':pct>55?'var(--neon-amber)':'var(--violet-l)'}"></div></div>
+    </div>
+  </div>`;
+}
+
+function renderBuyPlans(plans, me) {
+  const grid = document.getElementById('buy-plans-grid');
+  const accents = ['cyan', 'violet', 'green', 'amber'];
+  grid.innerHTML = plans.map((p, i) => {
+    const isCurrent = me.plan_id === p.id;
+    const isFree = p.price_bdt === 0 && p.price_per_month === 0;
+    const priceHtml = isFree
+      ? `<div class="buy-price"><span class="buy-price-free">FREE</span><span class="buy-price-unit">7-day trial</span></div>`
+      : `<div class="buy-price"><span class="buy-price-bdt">৳${p.price_bdt}</span><span class="buy-price-unit">/month</span></div>`;
+    const ramStr = p.ram_mb >= 1024 ? (p.ram_mb/1024).toFixed(1)+'GB' : p.ram_mb+'MB';
+    const accent = accents[i % accents.length];
+    const durStr = p.duration_days ? `${p.duration_days} দিন` : 'Unlimited';
+
+    return `<div class="buy-plan-card ${accent}-card2 ${isCurrent?'buy-plan-current':''}" data-accent="${accent}">
+      ${isCurrent ? `<div class="buy-current-badge">✓ Current</div>` : ''}
+      ${p.duration_days && p.price_bdt===0 ? `<div class="trial-badge" style="position:absolute;top:14px;right:14px">Trial</div>` : ''}
+      <div class="buy-plan-icon buy-icon-${accent}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+      </div>
+      <div class="buy-plan-name">${p.name}</div>
+      <div class="buy-plan-desc">${p.description||''}</div>
+      ${priceHtml}
+      <div class="buy-plan-specs">
+        <div class="buy-spec"><span class="buy-spec-dot ${accent}"></span>${p.max_slots} Slots</div>
+        <div class="buy-spec"><span class="buy-spec-dot ${accent}"></span>${ramStr} RAM</div>
+        <div class="buy-spec"><span class="buy-spec-dot ${accent}"></span>${p.cpu_percent}% CPU</div>
+        <div class="buy-spec"><span class="buy-spec-dot ${accent}"></span>${durStr}</div>
+      </div>
+      <a href="https://t.me/proxaura?text=I want to buy ${encodeURIComponent(p.name)} plan"
+         target="_blank"
+         class="buy-plan-btn buy-btn-${accent} ${isCurrent?'buy-btn-renew':''}">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z"/></svg>
+        ${isCurrent ? 'Renew Plan' : isFree ? 'Get Free Trial' : 'Buy via Telegram'}
+      </a>
+    </div>`;
+  }).join('');
+}
+
+loadDashboard().catch(e => console.error(e));
 </script>
 {% endblock %}

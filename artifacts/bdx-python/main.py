@@ -204,6 +204,7 @@ async def api_me(request: Request):
         raise HTTPException(401)
     row = await db.fetchone("""
         SELECT u.*, p.name as plan_name, p.max_slots, p.price_bdt, p.duration_days,
+               p.ram_mb, p.cpu_percent,
                (SELECT COUNT(*) FROM servers s WHERE s.user_id=u.id) as slots_used
         FROM users u LEFT JOIN plans p ON u.plan_id=p.id WHERE u.id=$1
     """, u["id"])
